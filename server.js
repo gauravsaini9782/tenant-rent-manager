@@ -26,6 +26,8 @@ app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
 
+// TENANT MANAGEMENT API ENDPOINTS
+
 // Helper function to write tenants to JSON file
 function writeTenants(tenants) {
   fs.writeFileSync(tenantsFilePath, JSON.stringify(tenants, null, 2));
@@ -79,6 +81,78 @@ app.delete('/api/tenants/:id', (req, res) => {
 
   tenants.splice(index, 1);
   writeTenants(tenants);
+
+  res.status(204).send();
+});
+
+// BILLING MANAGEMENT API ENDPOINTS
+
+const billsFilePath = path.join(__dirname, 'data', 'bills.json');
+
+// Helper functions for bills
+function readBills() {
+  const data = fs.readFileSync(billsFilePath, 'utf-8');
+  return JSON.parse(data);
+}
+
+function writeBills(bills) {
+  fs.writeFileSync(billsFilePath, JSON.stringify(bills, null, 2));
+}
+
+// GET all bills
+app.get('/api/bills', (req, res) => {
+  const bills = readBills();
+  res.json(bills);
+});
+
+// POST - Create a new bill
+app.post('/api/bills', (req, res) => {
+  const bills = readBills();
+
+  const newBill = {
+    id: Date.now(),
+    type: req.body.type,         // e.g. "electricity", "wifi", "water"
+    amount: req.body.amount,
+    dueDate: req.body.dueDate,
+    billingPeriod: req.body.billingPeriod,  // e.g. "June 2026"
+    splitMethod: req.body.splitMethod || 'equal',  // equal or per-room
+    status: req.body.status || 'unpaid'
+  };
+
+  bills.push(newBill);
+  writeBills(bills);
+
+  res.status(201).json(newBill);
+});
+
+// PUT - Update a bill
+app.put('/api/bills/:id', (req, res) => {
+  const bills = readBills();
+  const id = parseInt(req.params.id);
+
+  const index = bills.findIndex(b => b.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Bill not found' });
+  }
+
+  bills[index] = { ...bills[index], ...req.body };
+  writeBills(bills);
+
+  res.json(bills[index]);
+});
+
+// DELETE - Remove a bill
+app.delete('/api/bills/:id', (req, res) => {
+  const bills = readBills();
+  const id = parseInt(req.params.id);
+
+  const index = bills.findIndex(b => b.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Bill not found' });
+  }
+
+  bills.splice(index, 1);
+  writeBills(bills);
 
   res.status(204).send();
 });
