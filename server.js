@@ -156,3 +156,74 @@ app.delete('/api/bills/:id', (req, res) => {
 
   res.status(204).send();
 });
+
+// PAYMENT MANAGEMENT API ENDPOINTS
+
+const paymentsFilePath = path.join(__dirname, 'data', 'payments.json');
+
+// Helper functions for payments
+function readPayments() {
+  const data = fs.readFileSync(paymentsFilePath, 'utf-8');
+  return JSON.parse(data);
+}
+
+function writePayments(payments) {
+  fs.writeFileSync(paymentsFilePath, JSON.stringify(payments, null, 2));
+}
+
+// GET all payments
+app.get('/api/payments', (req, res) => {
+  const payments = readPayments();
+  res.json(payments);
+});
+
+// POST - Create a new payment
+app.post('/api/payments', (req, res) => {
+  const payments = readPayments();
+
+  const newPayment = {
+    id: Date.now(),
+    tenantId: req.body.tenantId,     // links to a tenant
+    billId: req.body.billId,         // links to a bill
+    amountPaid: req.body.amountPaid,
+    datePaid: req.body.datePaid,
+    status: req.body.status || 'paid'  // paid or pending
+  };
+
+  payments.push(newPayment);
+  writePayments(payments);
+
+  res.status(201).json(newPayment);
+});
+
+// PUT - Update a payment
+app.put('/api/payments/:id', (req, res) => {
+  const payments = readPayments();
+  const id = parseInt(req.params.id);
+
+  const index = payments.findIndex(p => p.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Payment not found' });
+  }
+
+  payments[index] = { ...payments[index], ...req.body };
+  writePayments(payments);
+
+  res.json(payments[index]);
+});
+
+// DELETE - Remove a payment
+app.delete('/api/payments/:id', (req, res) => {
+  const payments = readPayments();
+  const id = parseInt(req.params.id);
+
+  const index = payments.findIndex(p => p.id === id);
+  if (index === -1) {
+    return res.status(404).json({ error: 'Payment not found' });
+  }
+
+  payments.splice(index, 1);
+  writePayments(payments);
+
+  res.status(204).send();
+});
