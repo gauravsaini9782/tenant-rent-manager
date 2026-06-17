@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tenant Rent Manager</title>
+  </head>
+  <body>
+    <h1>Tenant Rent Manager</h1>
+
+    <!-- ===== TENANTS SECTION ===== -->
+    <section>
+      <h2>Tenants</h2>
+
+      <h3>Add New Tenant</h3>
+      <input type="text" id="tenantName" placeholder="Full Name" />
+      <input type="number" id="tenantRoom" placeholder="Room Number" />
+      <input type="number" id="tenantRent" placeholder="Rent Amount (€)" />
+      <input type="date" id="tenantMoveIn" />
+      <input
+        type="number"
+        id="tenantDeposit"
+        placeholder="Deposit Amount (€)"
+      />
+      <select id="tenantDepositStatus">
+        <option value="pending">Deposit Pending</option>
+        <option value="paid">Deposit Paid</option>
+      </select>
+      <button onclick="addTenant()">Add Tenant</button>
+
+      <h3>All Tenants</h3>
+      <button onclick="loadTenants()">Refresh Tenants</button>
+      <div id="tenantsList"></div>
+    </section>
+
+    <hr />
+
+    <!-- ===== BILLS SECTION ===== -->
+    <section>
+      <h2>Bills</h2>
+
+      <h3>Add New Bill</h3>
+      <select id="billType">
+        <option value="electricity">Electricity</option>
+        <option value="wifi">WiFi</option>
+        <option value="water">Water</option>
+        <option value="gas">Gas</option>
+      </select>
+      <input type="number" id="billAmount" placeholder="Amount (€)" />
+      <input type="date" id="billDueDate" />
+      <input
+        type="text"
+        id="billPeriod"
+        placeholder="Billing Period (e.g. June 2026)"
+      />
+      <select id="billSplit">
+        <option value="equal">Split Equally</option>
+        <option value="per-room">Per Room</option>
+      </select>
+      <button onclick="addBill()">Add Bill</button>
+
+      <h3>All Bills</h3>
+      <button onclick="loadBills()">Refresh Bills</button>
+      <div id="billsList"></div>
+    </section>
+
+    <hr />
+
+    <!-- ===== PAYMENTS SECTION ===== -->
+    <section>
+      <h2>Payments</h2>
+
+      <h3>Record a Payment</h3>
+      <input type="number" id="paymentTenantId" placeholder="Tenant ID" />
+      <input type="number" id="paymentBillId" placeholder="Bill ID" />
+      <input type="number" id="paymentAmount" placeholder="Amount Paid (€)" />
+      <input type="date" id="paymentDate" />
+      <select id="paymentStatus">
+        <option value="paid">Paid</option>
+        <option value="pending">Pending</option>
+      </select>
+      <button onclick="addPayment()">Record Payment</button>
+
+      <h3>All Payments</h3>
+      <button onclick="loadPayments()">Refresh Payments</button>
+      <div id="paymentsList"></div>
+    </section>
+
+    <script src="app.js"></script>
+  </body>
+</html>

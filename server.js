@@ -1,229 +1,281 @@
-const express = require('express');
-const fs = require('fs');
-const path = require('path');
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
 
 const app = express();
 const PORT = 3000;
 
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static("public"));
 
-const tenantsFilePath = path.join(__dirname, 'data', 'tenants.json');
+// ===== FILE PATHS =====
+const tenantsFilePath = path.join(__dirname, "data", "tenants.json");
+const billsFilePath = path.join(__dirname, "data", "bills.json");
+const paymentsFilePath = path.join(__dirname, "data", "payments.json");
 
-// Helper function to read tenants from JSON file
-function readTenants() {
-  const data = fs.readFileSync(tenantsFilePath, 'utf-8');
+// ===== HELPER FUNCTIONS =====
+function readJSON(filePath) {
+  const data = fs.readFileSync(filePath, "utf-8");
   return JSON.parse(data);
 }
 
-// GET all tenants
-app.get('/api/tenants', (req, res) => {
-  const tenants = readTenants();
+function writeJSON(filePath, data) {
+  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+// ===========================
+// TENANTS ENDPOINTS
+// ===========================
+
+// GET all tenants (with optional search)
+app.get("/api/tenants", (req, res) => {
+  let tenants = readJSON(tenantsFilePath);
+  const search = req.query.search;
+
+  if (search) {
+    const keyword = search.toLowerCase();
+    tenants = tenants.filter(
+      (t) =>
+        t.fullName.toLowerCase().includes(keyword) ||
+        t.roomNumber.toString().includes(keyword) ||
+        t.country.toLowerCase().includes(keyword) ||
+        t.phone.includes(keyword),
+    );
+  }
+
   res.json(tenants);
+});
+
+// GET single tenant by ID
+app.get("/api/tenants/:id", (req, res) => {
+  const tenants = readJSON(tenantsFilePath);
+  const tenant = tenants.find((t) => t.id === parseInt(req.params.id));
+
+  if (!tenant) return res.status(404).json({ error: "Tenant not found" });
+  res.json(tenant);
+});
+
+// POST - Create new tenant
+app.post("/api/tenants", (req, res) => {
+  const tenants = readJSON(tenantsFilePath);
+
+  const newTenant = {
+    id: Date.now(),
+    fullName: req.body.fullName,
+    phone: req.body.phone,
+    email: req.body.email,
+    country: req.body.country,
+    passportNumber: req.body.passportNumber,
+    roomNumber: req.body.roomNumber,
+    rentAmount: req.body.rentAmount,
+    depositAmount: req.body.depositAmount,
+    depositPaid: req.body.depositPaid || false,
+    advancePaid: req.body.advancePaid || 0,
+    pendingBalance: req.body.pendingBalance || 0,
+    leaseStart: req.body.leaseStart,
+    leaseEnd: req.body.leaseEnd,
+    status: req.body.status || "active",
+    notes: req.body.notes || "",
+  };
+
+  tenants.push(newTenant);
+  writeJSON(tenantsFilePath, tenants);
+  res.status(201).json(newTenant);
+});
+
+// PUT - Update tenant
+app.put("/api/tenants/:id", (req, res) => {
+  const tenants = readJSON(tenantsFilePath);
+  const index = tenants.findIndex((t) => t.id === parseInt(req.params.id));
+
+  if (index === -1) return res.status(404).json({ error: "Tenant not found" });
+
+  tenants[index] = { ...tenants[index], ...req.body };
+  writeJSON(tenantsFilePath, tenants);
+  res.json(tenants[index]);
+});
+
+// DELETE - Remove tenant
+app.delete("/api/tenants/:id", (req, res) => {
+  const tenants = readJSON(tenantsFilePath);
+  const index = tenants.findIndex((t) => t.id === parseInt(req.params.id));
+
+  if (index === -1) return res.status(404).json({ error: "Tenant not found" });
+
+  tenants.splice(index, 1);
+  writeJSON(tenantsFilePath, tenants);
+  res.status(204).send();
+});
+
+// ===========================
+// BILLS ENDPOINTS
+// ===========================
+
+// GET all bills
+app.get("/api/bills", (req, res) => {
+  const bills = readJSON(billsFilePath);
+  res.json(bills);
+});
+
+// POST - Create new shared bill (auto split)
+app.post("/api/bills", (req, res) => {
+  const bills = readJSON(billsFilePath);
+  const tenants = readJSON(tenantsFilePath);
+
+  // count only active tenants for splitting
+  const activeTenants = tenants.filter((t) => t.status === "active").length;
+  const splitAmount =
+    activeTenants > 0
+      ? (req.body.totalAmount / activeTenants).toFixed(2)
+      : req.body.totalAmount;
+
+  const newBill = {
+    id: Date.now(),
+    type: req.body.type,
+    totalAmount: req.body.totalAmount,
+    billingPeriod: req.body.billingPeriod,
+    dueDate: req.body.dueDate,
+    status: "unpaid",
+    splitAmount: parseFloat(splitAmount),
+    activeTenantCount: activeTenants,
+  };
+
+  bills.push(newBill);
+  writeJSON(billsFilePath, bills);
+  res.status(201).json(newBill);
+});
+
+// PUT - Update bill (e.g mark as paid)
+app.put("/api/bills/:id", (req, res) => {
+  const bills = readJSON(billsFilePath);
+  const index = bills.findIndex((b) => b.id === parseInt(req.params.id));
+
+  if (index === -1) return res.status(404).json({ error: "Bill not found" });
+
+  bills[index] = { ...bills[index], ...req.body };
+  writeJSON(billsFilePath, bills);
+  res.json(bills[index]);
+});
+
+// DELETE - Remove bill
+app.delete("/api/bills/:id", (req, res) => {
+  const bills = readJSON(billsFilePath);
+  const index = bills.findIndex((b) => b.id === parseInt(req.params.id));
+
+  if (index === -1) return res.status(404).json({ error: "Bill not found" });
+
+  bills.splice(index, 1);
+  writeJSON(billsFilePath, bills);
+  res.status(204).send();
+});
+
+// ===========================
+// PAYMENTS ENDPOINTS
+// ===========================
+
+// GET all payments (optionally filter by tenantId)
+app.get("/api/payments", (req, res) => {
+  let payments = readJSON(paymentsFilePath);
+  const tenantId = req.query.tenantId;
+
+  if (tenantId) {
+    payments = payments.filter((p) => p.tenantId === parseInt(tenantId));
+  }
+
+  res.json(payments);
+});
+
+// POST - Record a payment
+app.post("/api/payments", (req, res) => {
+  const payments = readJSON(paymentsFilePath);
+
+  const newPayment = {
+    id: Date.now(),
+    tenantId: req.body.tenantId,
+    type: req.body.type, // 'rent', 'electricity', 'wifi', 'water', 'gas'
+    amount: req.body.amount,
+    month: req.body.month, // e.g. "June 2026"
+    datePaid: req.body.datePaid,
+    status: req.body.status || "paid",
+  };
+
+  payments.push(newPayment);
+  writeJSON(paymentsFilePath, payments);
+  res.status(201).json(newPayment);
+});
+
+// PUT - Update payment
+app.put("/api/payments/:id", (req, res) => {
+  const payments = readJSON(paymentsFilePath);
+  const index = payments.findIndex((p) => p.id === parseInt(req.params.id));
+
+  if (index === -1) return res.status(404).json({ error: "Payment not found" });
+
+  payments[index] = { ...payments[index], ...req.body };
+  writeJSON(paymentsFilePath, payments);
+  res.json(payments[index]);
+});
+
+// DELETE - Remove payment
+app.delete("/api/payments/:id", (req, res) => {
+  const payments = readJSON(paymentsFilePath);
+  const index = payments.findIndex((p) => p.id === parseInt(req.params.id));
+
+  if (index === -1) return res.status(404).json({ error: "Payment not found" });
+
+  payments.splice(index, 1);
+  writeJSON(paymentsFilePath, payments);
+  res.status(204).send();
+});
+
+// ===========================
+// DASHBOARD ENDPOINT
+// ===========================
+
+app.get("/api/dashboard", (req, res) => {
+  const tenants = readJSON(tenantsFilePath);
+  const bills = readJSON(billsFilePath);
+  const payments = readJSON(paymentsFilePath);
+
+  const activeTenants = tenants.filter((t) => t.status === "active");
+  const inactiveTenants = tenants.filter((t) => t.status === "inactive");
+  const unpaidBills = bills.filter((b) => b.status === "unpaid");
+
+  // current month rent status per tenant
+  const currentMonth = new Date().toLocaleString("default", {
+    month: "long",
+    year: "numeric",
+  });
+  const rentPaymentsThisMonth = payments.filter(
+    (p) => p.type === "rent" && p.month === currentMonth,
+  );
+
+  const rentStatus = activeTenants.map((t) => {
+    const paid = rentPaymentsThisMonth.find((p) => p.tenantId === t.id);
+    return {
+      tenantId: t.id,
+      fullName: t.fullName,
+      roomNumber: t.roomNumber,
+      rentAmount: t.rentAmount,
+      rentPaid: !!paid,
+      datePaid: paid ? paid.datePaid : null,
+    };
+  });
+
+  res.json({
+    totalTenants: tenants.length,
+    activeTenants: activeTenants.length,
+    inactiveTenants: inactiveTenants.length,
+    unpaidBillsCount: unpaidBills.length,
+    unpaidBillsTotal: unpaidBills.reduce(
+      (sum, b) => sum + parseFloat(b.totalAmount),
+      0,
+    ),
+    currentMonth,
+    rentStatus,
+  });
 });
 
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
-});
-
-// TENANT MANAGEMENT API ENDPOINTS
-
-// Helper function to write tenants to JSON file
-function writeTenants(tenants) {
-  fs.writeFileSync(tenantsFilePath, JSON.stringify(tenants, null, 2));
-}
-
-// POST - Create a new tenant
-app.post('/api/tenants', (req, res) => {
-  const tenants = readTenants();
-
-  const newTenant = {
-    id: Date.now(), // simple unique id using timestamp
-    name: req.body.name,
-    roomNumber: req.body.roomNumber,
-    rentAmount: req.body.rentAmount,
-    moveInDate: req.body.moveInDate,
-    depositAmount: req.body.depositAmount,
-    depositStatus: req.body.depositStatus || 'pending'
-  };
-
-  tenants.push(newTenant);
-  writeTenants(tenants);
-
-  res.status(201).json(newTenant);
-});
-
-// PUT - Update an existing tenant
-app.put('/api/tenants/:id', (req, res) => {
-  const tenants = readTenants();
-  const id = parseInt(req.params.id);
-
-  const index = tenants.findIndex(t => t.id === id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Tenant not found' });
-  }
-
-  tenants[index] = { ...tenants[index], ...req.body };
-  writeTenants(tenants);
-
-  res.json(tenants[index]);
-});
-
-// DELETE - Remove a tenant
-app.delete('/api/tenants/:id', (req, res) => {
-  const tenants = readTenants();
-  const id = parseInt(req.params.id);
-
-  const index = tenants.findIndex(t => t.id === id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Tenant not found' });
-  }
-
-  tenants.splice(index, 1);
-  writeTenants(tenants);
-
-  res.status(204).send();
-});
-
-// BILLING MANAGEMENT API ENDPOINTS
-
-const billsFilePath = path.join(__dirname, 'data', 'bills.json');
-
-// Helper functions for bills
-function readBills() {
-  const data = fs.readFileSync(billsFilePath, 'utf-8');
-  return JSON.parse(data);
-}
-
-function writeBills(bills) {
-  fs.writeFileSync(billsFilePath, JSON.stringify(bills, null, 2));
-}
-
-// GET all bills
-app.get('/api/bills', (req, res) => {
-  const bills = readBills();
-  res.json(bills);
-});
-
-// POST - Create a new bill
-app.post('/api/bills', (req, res) => {
-  const bills = readBills();
-
-  const newBill = {
-    id: Date.now(),
-    type: req.body.type,         // e.g. "electricity", "wifi", "water"
-    amount: req.body.amount,
-    dueDate: req.body.dueDate,
-    billingPeriod: req.body.billingPeriod,  // e.g. "June 2026"
-    splitMethod: req.body.splitMethod || 'equal',  // equal or per-room
-    status: req.body.status || 'unpaid'
-  };
-
-  bills.push(newBill);
-  writeBills(bills);
-
-  res.status(201).json(newBill);
-});
-
-// PUT - Update a bill
-app.put('/api/bills/:id', (req, res) => {
-  const bills = readBills();
-  const id = parseInt(req.params.id);
-
-  const index = bills.findIndex(b => b.id === id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Bill not found' });
-  }
-
-  bills[index] = { ...bills[index], ...req.body };
-  writeBills(bills);
-
-  res.json(bills[index]);
-});
-
-// DELETE - Remove a bill
-app.delete('/api/bills/:id', (req, res) => {
-  const bills = readBills();
-  const id = parseInt(req.params.id);
-
-  const index = bills.findIndex(b => b.id === id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Bill not found' });
-  }
-
-  bills.splice(index, 1);
-  writeBills(bills);
-
-  res.status(204).send();
-});
-
-// PAYMENT MANAGEMENT API ENDPOINTS
-
-const paymentsFilePath = path.join(__dirname, 'data', 'payments.json');
-
-// Helper functions for payments
-function readPayments() {
-  const data = fs.readFileSync(paymentsFilePath, 'utf-8');
-  return JSON.parse(data);
-}
-
-function writePayments(payments) {
-  fs.writeFileSync(paymentsFilePath, JSON.stringify(payments, null, 2));
-}
-
-// GET all payments
-app.get('/api/payments', (req, res) => {
-  const payments = readPayments();
-  res.json(payments);
-});
-
-// POST - Create a new payment
-app.post('/api/payments', (req, res) => {
-  const payments = readPayments();
-
-  const newPayment = {
-    id: Date.now(),
-    tenantId: req.body.tenantId,     // links to a tenant
-    billId: req.body.billId,         // links to a bill
-    amountPaid: req.body.amountPaid,
-    datePaid: req.body.datePaid,
-    status: req.body.status || 'paid'  // paid or pending
-  };
-
-  payments.push(newPayment);
-  writePayments(payments);
-
-  res.status(201).json(newPayment);
-});
-
-// PUT - Update a payment
-app.put('/api/payments/:id', (req, res) => {
-  const payments = readPayments();
-  const id = parseInt(req.params.id);
-
-  const index = payments.findIndex(p => p.id === id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Payment not found' });
-  }
-
-  payments[index] = { ...payments[index], ...req.body };
-  writePayments(payments);
-
-  res.json(payments[index]);
-});
-
-// DELETE - Remove a payment
-app.delete('/api/payments/:id', (req, res) => {
-  const payments = readPayments();
-  const id = parseInt(req.params.id);
-
-  const index = payments.findIndex(p => p.id === id);
-  if (index === -1) {
-    return res.status(404).json({ error: 'Payment not found' });
-  }
-
-  payments.splice(index, 1);
-  writePayments(payments);
-
-  res.status(204).send();
 });
