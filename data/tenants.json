@@ -1,1 +1,56 @@
-[]
+[
+  {
+    "id": 1781719410856,
+    "fullName": "Arun Singh",
+    "phone": "+353 12345678",
+    "email": "arun123@singh.com",
+    "country": "India",
+    "passportNumber": "8ey7272y38",
+    "roomNumber": "101",
+    "rentAmount": "650",
+    "depositAmount": "500",
+    "depositPaid": "true",
+    "advancePaid": "650",
+    "pendingBalance": "150",
+    "leaseStart": "2026-06-17",
+    "leaseEnd": "2027-07-17",
+    "status": "active",
+    "notes": ""
+  },
+  {
+    "id": 1781719558805,
+    "fullName": "idiwjw",
+    "phone": "427478237823",
+    "email": "jbdjsbdjwb",
+    "country": "jwndjw",
+    "passportNumber": "mddwnjdnwmd",
+    "roomNumber": "12",
+    "rentAmount": "2122",
+    "depositAmount": "222",
+    "depositPaid": "true",
+    "advancePaid": "2122",
+    "pendingBalance": "2323",
+    "leaseStart": "2026-06-09",
+    "leaseEnd": "2026-06-18",
+    "status": "active",
+    "notes": ""
+  },
+  {
+    "id": 1781721057044,
+    "fullName": "jai",
+    "phone": "84823u42u482",
+    "email": "jai123@gmail.com",
+    "country": "Ireland",
+    "passportNumber": "818w718819818989",
+    "roomNumber": "123",
+    "rentAmount": "800",
+    "depositAmount": "200",
+    "depositPaid": "false",
+    "advancePaid": "800",
+    "pendingBalance": "600",
+    "leaseStart": "2026-06-16",
+    "leaseEnd": "2026-06-17",
+    "status": "active",
+    "notes": "paid 100 euro more"
+  }
+]

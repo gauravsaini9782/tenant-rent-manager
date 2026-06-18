@@ -1,1 +1,22 @@
-[]
+[
+  {
+    "id": 1781719586355,
+    "type": "electricity",
+    "totalAmount": "500",
+    "billingPeriod": "june 2026",
+    "dueDate": "2026-06-17",
+    "status": "paid",
+    "splitAmount": 250,
+    "activeTenantCount": 2
+  },
+  {
+    "id": 1781722092200,
+    "type": "water",
+    "totalAmount": "1000",
+    "billingPeriod": "june 2026",
+    "dueDate": "2026-06-17",
+    "status": "unpaid",
+    "splitAmount": 250,
+    "activeTenantCount": 4
+  }
+]

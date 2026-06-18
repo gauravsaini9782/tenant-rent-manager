@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": 1781722250285,
+    "tenantId": 1781721057044,
+    "type": "rent",
+    "amount": "100",
+    "month": "june 2026",
+    "datePaid": "2026-06-17",
+    "status": "paid"
+  }
+]

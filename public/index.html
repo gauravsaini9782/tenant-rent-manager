@@ -4,87 +4,298 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tenant Rent Manager</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Tenant Rent Manager</h1>
+    <header>
+      <h1>Tenant Rent Manager</h1>
+    </header>
 
-    <!-- ===== TENANTS SECTION ===== -->
-    <section>
-      <h2>Tenants</h2>
+    <nav>
+      <button class="active" onclick="showPage('dashboard', this)">
+        Dashboard
+      </button>
+      <button onclick="showPage('tenants', this)">Tenants</button>
+      <button onclick="showPage('bills', this)">Bills</button>
+      <button onclick="showPage('payments', this)">Payments</button>
+    </nav>
 
-      <h3>Add New Tenant</h3>
-      <input type="text" id="tenantName" placeholder="Full Name" />
-      <input type="number" id="tenantRoom" placeholder="Room Number" />
-      <input type="number" id="tenantRent" placeholder="Rent Amount (€)" />
-      <input type="date" id="tenantMoveIn" />
-      <input
-        type="number"
-        id="tenantDeposit"
-        placeholder="Deposit Amount (€)"
-      />
-      <select id="tenantDepositStatus">
-        <option value="pending">Deposit Pending</option>
-        <option value="paid">Deposit Paid</option>
-      </select>
-      <button onclick="addTenant()">Add Tenant</button>
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="page active">
+      <div class="stats-grid">
+        <div class="stat-box">
+          <h3 id="statTotal">0</h3>
+          <p>Total Tenants</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="statActive">0</h3>
+          <p>Active Tenants</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="statUnpaidBills">0</h3>
+          <p>Unpaid Bills</p>
+        </div>
+        <div class="stat-box">
+          <h3 id="statUnpaidAmount">0</h3>
+          <p>Unpaid Amount (€)</p>
+        </div>
+      </div>
 
-      <h3>All Tenants</h3>
-      <button onclick="loadTenants()">Refresh Tenants</button>
-      <div id="tenantsList"></div>
-    </section>
+      <div class="bills-stats-grid" id="billsBreakdown"></div>
 
-    <hr />
+      <div class="card">
+        <h2>Search Tenants</h2>
+        <div class="search-bar">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search by name, room, country or phone..."
+            oninput="searchTenants()"
+          />
+        </div>
+        <div id="searchResults"></div>
+      </div>
 
-    <!-- ===== BILLS SECTION ===== -->
-    <section>
-      <h2>Bills</h2>
+      <div class="card">
+        <h2>This Month Rent Status — <span id="currentMonth"></span></h2>
+        <div class="table-wrap" id="rentStatus"></div>
+      </div>
+    </div>
 
-      <h3>Add New Bill</h3>
-      <select id="billType">
-        <option value="electricity">Electricity</option>
-        <option value="wifi">WiFi</option>
-        <option value="water">Water</option>
-        <option value="gas">Gas</option>
-      </select>
-      <input type="number" id="billAmount" placeholder="Amount (€)" />
-      <input type="date" id="billDueDate" />
-      <input
-        type="text"
-        id="billPeriod"
-        placeholder="Billing Period (e.g. June 2026)"
-      />
-      <select id="billSplit">
-        <option value="equal">Split Equally</option>
-        <option value="per-room">Per Room</option>
-      </select>
-      <button onclick="addBill()">Add Bill</button>
+    <!-- TENANTS -->
+    <div id="tenants" class="page">
+      <div class="card">
+        <h2>Add New Tenant</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Full Name *</label>
+            <input type="text" id="tFullName" placeholder="e.g. John Murphy" />
+            <span class="error-msg" id="err-tFullName"
+              >Full name is required</span
+            >
+          </div>
+          <div class="form-group">
+            <label>Phone Number *</label>
+            <input
+              type="text"
+              id="tPhone"
+              placeholder="e.g. +353 87 123 4567"
+            />
+            <span class="error-msg" id="err-tPhone"
+              >Valid phone number is required</span
+            >
+          </div>
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" id="tEmail" placeholder="e.g. john@email.com" />
+            <span class="error-msg" id="err-tEmail">Enter a valid email</span>
+          </div>
+          <div class="form-group">
+            <label>Country / Nationality *</label>
+            <input type="text" id="tCountry" placeholder="e.g. Ireland" />
+            <span class="error-msg" id="err-tCountry">Country is required</span>
+          </div>
+          <div class="form-group">
+            <label>Passport / ID Number *</label>
+            <input type="text" id="tPassport" placeholder="e.g. PA1234567" />
+            <span class="error-msg" id="err-tPassport"
+              >Passport/ID number is required</span
+            >
+          </div>
+          <div class="form-group">
+            <label>Room Number *</label>
+            <input type="number" id="tRoom" placeholder="e.g. 101" min="1" />
+            <span class="error-msg" id="err-tRoom"
+              >Room number is required</span
+            >
+          </div>
+          <div class="form-group">
+            <label>Monthly Rent (€) *</label>
+            <input type="number" id="tRent" placeholder="e.g. 650" min="0" />
+            <span class="error-msg" id="err-tRent"
+              >Rent amount is required</span
+            >
+          </div>
+          <div class="form-group">
+            <label>Deposit Amount (€)</label>
+            <input type="number" id="tDeposit" placeholder="e.g. 650" min="0" />
+            <span class="error-msg" id="err-tDeposit"></span>
+          </div>
+          <div class="form-group">
+            <label>Deposit Status</label>
+            <select id="tDepositPaid">
+              <option value="false">Not Paid</option>
+              <option value="true">Paid</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Advance Paid (€)</label>
+            <input type="number" id="tAdvance" placeholder="e.g. 0" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Pending Balance (€)</label>
+            <input type="number" id="tPending" placeholder="e.g. 0" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="tStatus">
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Lease Start Date *</label>
+            <input type="date" id="tLeaseStart" />
+            <span class="error-msg" id="err-tLeaseStart"
+              >Lease start date is required</span
+            >
+          </div>
+          <div class="form-group">
+            <label>Lease End Date</label>
+            <input type="date" id="tLeaseEnd" />
+          </div>
+          <div class="form-group full-width">
+            <label>Notes</label>
+            <textarea
+              id="tNotes"
+              placeholder="Any additional notes about this tenant..."
+            ></textarea>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addTenant()">
+          Add Tenant
+        </button>
+      </div>
 
-      <h3>All Bills</h3>
-      <button onclick="loadBills()">Refresh Bills</button>
-      <div id="billsList"></div>
-    </section>
+      <div class="card">
+        <h2>All Tenants</h2>
+        <div class="search-bar">
+          <input
+            type="text"
+            id="tenantSearchInput"
+            placeholder="Search tenants..."
+            oninput="filterTenants()"
+          />
+        </div>
+        <div class="table-wrap">
+          <div id="tenantsList"></div>
+        </div>
+      </div>
+    </div>
 
-    <hr />
+    <!-- BILLS -->
+    <div id="bills" class="page">
+      <div class="card">
+        <h2>Add Shared Bill</h2>
+        <p class="hint">
+          The total amount will be split equally among all active tenants
+          automatically.
+        </p>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Bill Type *</label>
+            <select id="bType">
+              <option value="electricity">Electricity</option>
+              <option value="wifi">WiFi</option>
+              <option value="water">Water</option>
+              <option value="gas">Gas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Total Amount (€) *</label>
+            <input type="number" id="bAmount" placeholder="e.g. 120" min="0" />
+            <span class="error-msg" id="err-bAmount">Amount is required</span>
+          </div>
+          <div class="form-group">
+            <label>Billing Period *</label>
+            <input type="text" id="bPeriod" placeholder="e.g. June 2026" />
+            <span class="error-msg" id="err-bPeriod"
+              >Billing period is required</span
+            >
+          </div>
+          <div class="form-group">
+            <label>Due Date *</label>
+            <input type="date" id="bDueDate" />
+            <span class="error-msg" id="err-bDueDate"
+              >Due date is required</span
+            >
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addBill()">Add Bill</button>
+      </div>
 
-    <!-- ===== PAYMENTS SECTION ===== -->
-    <section>
-      <h2>Payments</h2>
+      <div class="card">
+        <h2>All Bills</h2>
+        <div class="table-wrap">
+          <div id="billsList"></div>
+        </div>
+      </div>
+    </div>
 
-      <h3>Record a Payment</h3>
-      <input type="number" id="paymentTenantId" placeholder="Tenant ID" />
-      <input type="number" id="paymentBillId" placeholder="Bill ID" />
-      <input type="number" id="paymentAmount" placeholder="Amount Paid (€)" />
-      <input type="date" id="paymentDate" />
-      <select id="paymentStatus">
-        <option value="paid">Paid</option>
-        <option value="pending">Pending</option>
-      </select>
-      <button onclick="addPayment()">Record Payment</button>
+    <!-- PAYMENTS -->
+    <div id="payments" class="page">
+      <div class="card">
+        <h2>Record Payment</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Tenant ID *</label>
+            <input
+              type="number"
+              id="pTenantId"
+              placeholder="Paste tenant ID here"
+            />
+            <span class="error-msg" id="err-pTenantId"
+              >Tenant ID is required</span
+            >
+          </div>
+          <div class="form-group">
+            <label>Payment Type *</label>
+            <select id="pType">
+              <option value="rent">Rent</option>
+              <option value="electricity">Electricity</option>
+              <option value="wifi">WiFi</option>
+              <option value="water">Water</option>
+              <option value="gas">Gas</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Amount Paid (€) *</label>
+            <input type="number" id="pAmount" placeholder="e.g. 650" min="0" />
+            <span class="error-msg" id="err-pAmount">Amount is required</span>
+          </div>
+          <div class="form-group">
+            <label>Month *</label>
+            <input type="text" id="pMonth" placeholder="e.g. June 2026" />
+            <span class="error-msg" id="err-pMonth">Month is required</span>
+          </div>
+          <div class="form-group">
+            <label>Date Paid *</label>
+            <input type="date" id="pDate" />
+            <span class="error-msg" id="err-pDate">Date is required</span>
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="pStatus">
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="overdue">Overdue</option>
+            </select>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="addPayment()">
+          Record Payment
+        </button>
+      </div>
 
-      <h3>All Payments</h3>
-      <button onclick="loadPayments()">Refresh Payments</button>
-      <div id="paymentsList"></div>
-    </section>
+      <div class="card">
+        <h2>Payment History</h2>
+        <div class="table-wrap">
+          <div id="paymentsList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
 
     <script src="app.js"></script>
   </body>
