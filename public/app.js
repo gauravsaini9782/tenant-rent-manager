@@ -40,7 +40,7 @@ function showError(fieldId, msgId) {
 }
 
 function validateEmail(email) {
-  return !email || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
 function validatePhone(phone) {
@@ -63,9 +63,9 @@ async function loadDashboard() {
 
     // Bills breakdown by type
     const breakdown = document.getElementById("billsBreakdown");
-    const billTypes = ["electricity", "wifi", "water", "gas"];
     const bills = await fetch(`${API}/bills`).then((r) => r.json());
 
+    const billTypes = ["electricity", "wifi", "water", "gas"];
     breakdown.innerHTML = billTypes
       .map((type) => {
         const typeBills = bills.filter((b) => b.type === type);
@@ -92,7 +92,7 @@ async function loadDashboard() {
       <table>
         <thead>
           <tr>
-            <th>Tenant Name</th>
+            <th>Name</th>
             <th>Room</th>
             <th>Rent (€)</th>
             <th>Status</th>
@@ -144,7 +144,10 @@ async function searchTenants() {
   resultsDiv.innerHTML = `
     <table>
       <thead>
-        <tr><th>Name</th><th>Room</th><th>Country</th><th>Phone</th><th>Rent</th><th>Status</th></tr>
+        <tr>
+          <th>Name</th><th>Room</th><th>Country</th>
+          <th>Phone</th><th>Rent</th><th>Status</th>
+        </tr>
       </thead>
       <tbody>
         ${tenants
@@ -195,12 +198,24 @@ function renderTenantsTable(tenants) {
     <table>
       <thead>
         <tr>
-          <th>Name</th><th>Room</th><th>Country</th><th>Phone</th>
-          <th>Rent</th><th>Deposit</th><th>Lease Start</th>
-          <th>Lease End</th><th>Status</th><th>Actions</th>
+          <th>Name</th>
+          <th>Phone</th>
+          <th>Email</th>
+          <th>Country</th>
+          <th>Passport/ID</th>
+          <th>Room</th>
+          <th>Rent</th>
+          <th>Deposit</th>
+          <th>Advance</th>
+          <th>Pending</th>
+          <th>Lease Start</th>
+          <th>Lease End</th>
+          <th>Status</th>
+          <th>Notes</th>
+          <th>Actions</th>
         </tr>
       </thead>
-      <tbody id="tenantsTableBody">
+      <tbody>
         ${tenants.map((t) => renderTenantRow(t)).join("")}
       </tbody>
     </table>
@@ -212,9 +227,11 @@ function renderTenantRow(t) {
   return `
     <tr id="row-${t.id}">
       <td>${t.fullName}</td>
-      <td>Room ${t.roomNumber}</td>
-      <td>${t.country}</td>
       <td>${t.phone}</td>
+      <td>${t.email || "—"}</td>
+      <td>${t.country}</td>
+      <td>${t.passportNumber}</td>
+      <td>Room ${t.roomNumber}</td>
       <td>€${t.rentAmount}/mo</td>
       <td>
         €${t.depositAmount || 0}
@@ -222,42 +239,60 @@ function renderTenantRow(t) {
           ${depositPaid ? "Paid" : "Pending"}
         </span>
       </td>
+      <td>€${t.advancePaid || 0}</td>
+      <td>€${t.pendingBalance || 0}</td>
       <td>${t.leaseStart || "—"}</td>
       <td>${t.leaseEnd || "—"}</td>
-      <td><span class="badge ${t.status === "active" ? "badge-green" : "badge-red"}">${t.status}</span></td>
+      <td>
+        <span class="badge ${t.status === "active" ? "badge-green" : "badge-red"}">
+          ${t.status}
+        </span>
+      </td>
+      <td>${t.notes || "—"}</td>
       <td>
         <button class="btn btn-warning btn-sm" onclick="showEditForm(${t.id})">Edit</button>
         <button class="btn btn-danger btn-sm" onclick="deleteTenant(${t.id})" style="margin-left:4px">Delete</button>
       </td>
     </tr>
     <tr id="edit-${t.id}" style="display:none;">
-      <td colspan="10">
+      <td colspan="15">
         <div class="edit-form">
           <h4>Edit Tenant — ${t.fullName}</h4>
           <div class="form-grid">
             <div class="form-group">
-              <label>Full Name</label>
+              <label>Full Name *</label>
               <input type="text" id="e-fullName-${t.id}" value="${t.fullName}" />
+              <span class="error-msg" id="e-err-fullName-${t.id}">Full name is required</span>
             </div>
             <div class="form-group">
-              <label>Phone</label>
+              <label>Phone *</label>
               <input type="text" id="e-phone-${t.id}" value="${t.phone}" />
+              <span class="error-msg" id="e-err-phone-${t.id}">Valid phone number is required</span>
             </div>
             <div class="form-group">
-              <label>Email</label>
+              <label>Email *</label>
               <input type="email" id="e-email-${t.id}" value="${t.email || ""}" />
+              <span class="error-msg" id="e-err-email-${t.id}">Valid email is required</span>
             </div>
             <div class="form-group">
-              <label>Country</label>
+              <label>Country *</label>
               <input type="text" id="e-country-${t.id}" value="${t.country}" />
+              <span class="error-msg" id="e-err-country-${t.id}">Country is required</span>
             </div>
             <div class="form-group">
-              <label>Room Number</label>
+              <label>Passport/ID *</label>
+              <input type="text" id="e-passport-${t.id}" value="${t.passportNumber || ""}" />
+              <span class="error-msg" id="e-err-passport-${t.id}">Passport/ID is required</span>
+            </div>
+            <div class="form-group">
+              <label>Room Number *</label>
               <input type="number" id="e-room-${t.id}" value="${t.roomNumber}" />
+              <span class="error-msg" id="e-err-room-${t.id}">Room number is required</span>
             </div>
             <div class="form-group">
-              <label>Monthly Rent (€)</label>
+              <label>Monthly Rent (€) *</label>
               <input type="number" id="e-rent-${t.id}" value="${t.rentAmount}" />
+              <span class="error-msg" id="e-err-rent-${t.id}">Rent amount is required</span>
             </div>
             <div class="form-group">
               <label>Deposit Amount (€)</label>
@@ -271,13 +306,6 @@ function renderTenantRow(t) {
               </select>
             </div>
             <div class="form-group">
-              <label>Status</label>
-              <select id="e-status-${t.id}">
-                <option value="active" ${t.status === "active" ? "selected" : ""}>Active</option>
-                <option value="inactive" ${t.status === "inactive" ? "selected" : ""}>Inactive</option>
-              </select>
-            </div>
-            <div class="form-group">
               <label>Advance Paid (€)</label>
               <input type="number" id="e-advance-${t.id}" value="${t.advancePaid || 0}" />
             </div>
@@ -286,8 +314,16 @@ function renderTenantRow(t) {
               <input type="number" id="e-pending-${t.id}" value="${t.pendingBalance || 0}" />
             </div>
             <div class="form-group">
-              <label>Lease Start</label>
+              <label>Status</label>
+              <select id="e-status-${t.id}">
+                <option value="active" ${t.status === "active" ? "selected" : ""}>Active</option>
+                <option value="inactive" ${t.status === "inactive" ? "selected" : ""}>Inactive</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Lease Start *</label>
               <input type="date" id="e-leaseStart-${t.id}" value="${t.leaseStart || ""}" />
+              <span class="error-msg" id="e-err-leaseStart-${t.id}">Lease start is required</span>
             </div>
             <div class="form-group">
               <label>Lease End</label>
@@ -310,48 +346,99 @@ function renderTenantRow(t) {
 
 function showEditForm(id) {
   document.getElementById(`edit-${id}`).style.display = "table-row";
-  document
+  const editBtn = document
     .getElementById(`row-${id}`)
-    .querySelector(".btn-warning").textContent = "Close";
-  document
-    .getElementById(`row-${id}`)
-    .querySelector(".btn-warning")
-    .setAttribute("onclick", `hideEditForm(${id})`);
+    .querySelector(".btn-warning");
+  editBtn.textContent = "Close";
+  editBtn.setAttribute("onclick", `hideEditForm(${id})`);
 }
 
 function hideEditForm(id) {
   document.getElementById(`edit-${id}`).style.display = "none";
-  document
+  const editBtn = document
     .getElementById(`row-${id}`)
-    .querySelector(".btn-warning").textContent = "Edit";
-  document
-    .getElementById(`row-${id}`)
-    .querySelector(".btn-warning")
-    .setAttribute("onclick", `showEditForm(${id})`);
+    .querySelector(".btn-warning");
+  editBtn.textContent = "Edit";
+  editBtn.setAttribute("onclick", `showEditForm(${id})`);
 }
 
 async function saveEditTenant(id) {
+  const fullName = document.getElementById(`e-fullName-${id}`).value.trim();
+  const phone = document.getElementById(`e-phone-${id}`).value.trim();
+  const email = document.getElementById(`e-email-${id}`).value.trim();
+  const country = document.getElementById(`e-country-${id}`).value.trim();
+  const passportNumber = document
+    .getElementById(`e-passport-${id}`)
+    .value.trim();
+  const roomNumber = document.getElementById(`e-room-${id}`).value;
+  const rentAmount = document.getElementById(`e-rent-${id}`).value;
+  const leaseStart = document.getElementById(`e-leaseStart-${id}`).value;
+
+  let valid = true;
+
+  if (!fullName) {
+    document.getElementById(`e-err-fullName-${id}`).classList.add("show");
+    document.getElementById(`e-fullName-${id}`).classList.add("error");
+    valid = false;
+  }
+  if (!phone || !validatePhone(phone)) {
+    document.getElementById(`e-err-phone-${id}`).classList.add("show");
+    document.getElementById(`e-phone-${id}`).classList.add("error");
+    valid = false;
+  }
+  if (!email || !validateEmail(email)) {
+    document.getElementById(`e-err-email-${id}`).classList.add("show");
+    document.getElementById(`e-email-${id}`).classList.add("error");
+    valid = false;
+  }
+  if (!country) {
+    document.getElementById(`e-err-country-${id}`).classList.add("show");
+    document.getElementById(`e-country-${id}`).classList.add("error");
+    valid = false;
+  }
+  if (!passportNumber) {
+    document.getElementById(`e-err-passport-${id}`).classList.add("show");
+    document.getElementById(`e-passport-${id}`).classList.add("error");
+    valid = false;
+  }
+  if (!roomNumber) {
+    document.getElementById(`e-err-room-${id}`).classList.add("show");
+    document.getElementById(`e-room-${id}`).classList.add("error");
+    valid = false;
+  }
+  if (!rentAmount) {
+    document.getElementById(`e-err-rent-${id}`).classList.add("show");
+    document.getElementById(`e-rent-${id}`).classList.add("error");
+    valid = false;
+  }
+  if (!leaseStart) {
+    document.getElementById(`e-err-leaseStart-${id}`).classList.add("show");
+    document.getElementById(`e-leaseStart-${id}`).classList.add("error");
+    valid = false;
+  }
+
+  if (!valid) {
+    showToast("Please fix the errors in the edit form", "error");
+    return;
+  }
+
   const updated = {
-    fullName: document.getElementById(`e-fullName-${id}`).value.trim(),
-    phone: document.getElementById(`e-phone-${id}`).value.trim(),
-    email: document.getElementById(`e-email-${id}`).value.trim(),
-    country: document.getElementById(`e-country-${id}`).value.trim(),
-    roomNumber: document.getElementById(`e-room-${id}`).value,
-    rentAmount: document.getElementById(`e-rent-${id}`).value,
+    fullName,
+    phone,
+    email,
+    country,
+    passportNumber,
+    roomNumber,
+    rentAmount,
     depositAmount: document.getElementById(`e-deposit-${id}`).value,
     depositPaid: document.getElementById(`e-depositPaid-${id}`).value,
-    status: document.getElementById(`e-status-${id}`).value,
     advancePaid: document.getElementById(`e-advance-${id}`).value,
     pendingBalance: document.getElementById(`e-pending-${id}`).value,
-    leaseStart: document.getElementById(`e-leaseStart-${id}`).value,
+    status: document.getElementById(`e-status-${id}`).value,
+    leaseStart,
     leaseEnd: document.getElementById(`e-leaseEnd-${id}`).value,
     notes: document.getElementById(`e-notes-${id}`).value.trim(),
   };
-
-  if (!updated.fullName || !updated.phone || !updated.country) {
-    showToast("Name, phone and country are required", "error");
-    return;
-  }
 
   await fetch(`${API}/tenants/${id}`, {
     method: "PUT",
@@ -384,6 +471,7 @@ async function addTenant() {
   const leaseEnd = document.getElementById("tLeaseEnd").value;
   const notes = document.getElementById("tNotes").value.trim();
 
+  // Validate all required fields
   if (!fullName) {
     showError("tFullName", "err-tFullName");
     valid = false;
@@ -392,7 +480,7 @@ async function addTenant() {
     showError("tPhone", "err-tPhone");
     valid = false;
   }
-  if (email && !validateEmail(email)) {
+  if (!email || !validateEmail(email)) {
     showError("tEmail", "err-tEmail");
     valid = false;
   }
@@ -408,7 +496,7 @@ async function addTenant() {
     showError("tRoom", "err-tRoom");
     valid = false;
   }
-  if (!rentAmount) {
+  if (!rentAmount || rentAmount <= 0) {
     showError("tRent", "err-tRent");
     valid = false;
   }
@@ -444,6 +532,7 @@ async function addTenant() {
     }),
   });
 
+  // Clear all form fields
   [
     "tFullName",
     "tPhone",
@@ -504,7 +593,11 @@ async function loadBills() {
             <td>${b.activeTenantCount}</td>
             <td>${b.billingPeriod}</td>
             <td>${b.dueDate}</td>
-            <td><span class="badge ${b.status === "paid" ? "badge-green" : "badge-red"}">${b.status}</span></td>
+            <td>
+              <span class="badge ${b.status === "paid" ? "badge-green" : "badge-red"}">
+                ${b.status}
+              </span>
+            </td>
             <td>
               ${
                 b.status === "unpaid"
@@ -531,7 +624,7 @@ async function addBill() {
   const billingPeriod = document.getElementById("bPeriod").value.trim();
   const dueDate = document.getElementById("bDueDate").value;
 
-  if (!totalAmount) {
+  if (!totalAmount || totalAmount <= 0) {
     showError("bAmount", "err-bAmount");
     valid = false;
   }
@@ -650,7 +743,7 @@ async function addPayment() {
     showError("pTenantId", "err-pTenantId");
     valid = false;
   }
-  if (!amount) {
+  if (!amount || amount <= 0) {
     showError("pAmount", "err-pAmount");
     valid = false;
   }
