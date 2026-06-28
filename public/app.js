@@ -195,7 +195,7 @@ function renderTenantsTable(tenants) {
   }
 
   div.innerHTML = `
-    <table>
+    <table class="tenant-table">
       <thead>
         <tr>
           <th>Name</th>

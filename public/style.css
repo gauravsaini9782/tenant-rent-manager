@@ -15,9 +15,6 @@ header {
   background: #1a2533;
   color: white;
   padding: 14px 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 header h1 {
@@ -58,7 +55,6 @@ nav button.active {
 .page {
   display: none;
   padding: 16px;
-  max-width: 1400px;
   margin: 0 auto;
 }
 
@@ -153,7 +149,7 @@ nav button.active {
 /* FORMS */
 .form-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 10px;
   margin-bottom: 14px;
 }
@@ -214,15 +210,12 @@ nav button.active {
   resize: vertical;
   min-height: 65px;
 }
+
 .full-width {
   grid-column: 1 / -1;
 }
 
 /* INLINE EDIT */
-.edit-row td {
-  padding: 0 !important;
-}
-
 .edit-form {
   background: #f8f9fb;
   border: 1px solid #e0e4ea;
@@ -314,19 +307,71 @@ nav button.active {
 .table-wrap {
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
+  width: 100%;
 }
 
 table {
-  width: 100%;
   border-collapse: collapse;
-  font-size: 13px;
-  min-width: 500px;
+  font-size: 12px;
+  width: 100%;
 }
+
+/* Tenant table specific */
+.tenant-table {
+  min-width: 1400px;
+  table-layout: fixed;
+}
+
+.tenant-table th:nth-child(1) {
+  width: 120px;
+} /* Name */
+.tenant-table th:nth-child(2) {
+  width: 115px;
+} /* Phone */
+.tenant-table th:nth-child(3) {
+  width: 150px;
+} /* Email */
+.tenant-table th:nth-child(4) {
+  width: 90px;
+} /* Country */
+.tenant-table th:nth-child(5) {
+  width: 110px;
+} /* Passport */
+.tenant-table th:nth-child(6) {
+  width: 55px;
+} /* Room */
+.tenant-table th:nth-child(7) {
+  width: 75px;
+} /* Rent */
+.tenant-table th:nth-child(8) {
+  width: 100px;
+} /* Deposit */
+.tenant-table th:nth-child(9) {
+  width: 75px;
+} /* Advance */
+.tenant-table th:nth-child(10) {
+  width: 75px;
+} /* Pending */
+.tenant-table th:nth-child(11) {
+  width: 90px;
+} /* Lease Start */
+.tenant-table th:nth-child(12) {
+  width: 90px;
+} /* Lease End */
+.tenant-table th:nth-child(13) {
+  width: 65px;
+} /* Status */
+.tenant-table th:nth-child(14) {
+  width: 140px;
+} /* Notes */
+.tenant-table th:nth-child(15) {
+  width: 110px;
+} /* Actions */
 
 th {
   background: #1a2533;
   color: white;
-  padding: 10px 12px;
+  padding: 10px 10px;
   text-align: left;
   font-weight: 500;
   font-size: 11px;
@@ -336,10 +381,23 @@ th {
 }
 
 td {
-  padding: 10px 12px;
+  padding: 9px 10px;
   border-bottom: 1px solid #f0f0f0;
   vertical-align: middle;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 0;
 }
+
+/* Notes column — allow wrap */
+.tenant-table td:nth-child(14) {
+  white-space: normal;
+  word-break: break-word;
+  font-size: 11px;
+  color: #666;
+}
+
 tr:last-child td {
   border-bottom: none;
 }
@@ -349,7 +407,7 @@ tr:hover td {
 
 /* BADGES */
 .badge {
-  padding: 3px 9px;
+  padding: 3px 8px;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 600;
@@ -396,14 +454,16 @@ tr:hover td {
   line-height: 1.6;
 }
 
+/* TOOLTIP for truncated text */
+td[title] {
+  cursor: default;
+}
+
 /* TOAST */
 .toast {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  left: 20px;
-  max-width: 360px;
-  margin: 0 auto;
   background: #1a2533;
   color: white;
   padding: 12px 20px;
@@ -415,6 +475,7 @@ tr:hover td {
   transform: translateY(10px);
   transition: all 0.3s;
   pointer-events: none;
+  max-width: 320px;
 }
 
 .toast.show {
@@ -434,6 +495,9 @@ tr:hover td {
   .bills-stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
+  .form-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 768px) {
@@ -441,46 +505,31 @@ tr:hover td {
   .bills-stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
   .form-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-
   nav button {
     padding: 7px 12px;
     font-size: 12px;
   }
-
   header h1 {
     font-size: 16px;
   }
-
   .page {
     padding: 12px;
   }
-
   .card {
     padding: 14px;
-  }
-
-  td,
-  th {
-    padding: 8px 10px;
   }
 }
 
 @media (max-width: 480px) {
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+  .stats-grid,
   .bills-stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
   .form-grid {
     grid-template-columns: 1fr;
-  }
-  .full-width {
-    grid-column: 1;
   }
   nav {
     padding: 6px 10px;
@@ -510,5 +559,6 @@ tr:hover td {
     bottom: 12px;
     right: 12px;
     left: 12px;
+    max-width: 100%;
   }
 }
