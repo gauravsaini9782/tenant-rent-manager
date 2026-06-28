@@ -552,6 +552,7 @@ async function addTenant() {
   showToast("Tenant added successfully");
   loadTenants();
   loadDashboard();
+  loadTenantDropdown();
 }
 
 async function deleteTenant(id) {
@@ -791,10 +792,30 @@ async function deletePayment(id) {
   loadPayments();
 }
 
+async function loadTenantDropdown() {
+  const res = await fetch(`${API}/tenants`);
+  const tenants = await res.json();
+  const select = document.getElementById("pTenantId");
+
+  // Keep the default empty option
+  select.innerHTML = '<option value="">-- Select Tenant --</option>';
+
+  // Add one option per active tenant
+  tenants
+    .filter((t) => t.status === "active")
+    .forEach((t) => {
+      const option = document.createElement("option");
+      option.value = t.id;
+      option.textContent = `${t.fullName} — Room ${t.roomNumber}`;
+      select.appendChild(option);
+    });
+}
+
 // ===== INIT =====
 window.onload = () => {
   loadDashboard();
   loadTenants();
   loadBills();
   loadPayments();
+  loadTenantDropdown();
 };

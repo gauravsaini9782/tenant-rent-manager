@@ -237,17 +237,13 @@
       <div class="card">
         <h2>Record Payment</h2>
         <div class="form-grid">
-          <div class="form-group">
-            <label>Tenant ID *</label>
-            <input
-              type="number"
-              id="pTenantId"
-              placeholder="Paste tenant ID here"
-            />
-            <span class="error-msg" id="err-pTenantId"
-              >Tenant ID is required</span
-            >
-          </div>
+           <div class="form-group">
+        <label>Select Tenant *</label>
+        <select id="pTenantId">
+          <option value="">-- Select Tenant --</option>
+        </select>
+        <span class="error-msg" id="err-pTenantId">Please select a tenant</span>
+      </div>
           <div class="form-group">
             <label>Payment Type *</label>
             <select id="pType">
