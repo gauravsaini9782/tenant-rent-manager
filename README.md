@@ -330,10 +330,20 @@ The project requirements, application design and overall implementation were com
 
 ## References & Attributions
 
-- Express documentation: https://expressjs.com/en/guide/routing.html
-- Jest documentation: https://jestjs.io/docs/getting-started
-- MDN Web Docs (fetch API): https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
-- Node.js fs module documentation: https://nodejs.org/api/fs.html
+- Node.js Documentation: https://nodejs.org/en/docs
+- Express.js Documentation: https://expressjs.com/en/guide/routing.html
+- Jest Documentation: https://jestjs.io/docs/getting-started
+- Supertest Documentation: https://github.com/ladjs/supertest
+- MDN Web Docs - Fetch API: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+- MDN Web Docs - Async/Await: https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Asynchronous/Promises
+- MDN Web Docs - Array.findIndex(): https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/findIndex
+- MDN Web Docs - JSON.parse() and JSON.stringify(): https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON
+- MDN Web Docs - window.location: https://developer.mozilla.org/en-US/docs/Web/API/Window/location
+- Node.js fs Module: https://nodejs.org/api/fs.html
+
+### Deployment
+
+- Render Deployment Documentation: https://render.com/docs/deploy-node-express-ap
 
 ### Libraries & Frameworks
 
