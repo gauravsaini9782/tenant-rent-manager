@@ -130,7 +130,7 @@ tenant-rent-manager/
 
 ### How it Works
 
-The frontend is served statically by Express. All CRUD operations are performed through JavaScript `fetch()` requests to the REST API. The server reads from and writes to JSON files, allowing data to persist without requiring a database. The user interface updates dynamically without requiring page reloads.
+The frontend is served statically by Express. JavaScript communicates with the backend through the Fetch API, where Express handles the REST API requests. The server performs CRUD operations by reading from and writing to JSON flat files, and the frontend updates the DOM dynamically without requiring a full page refresh.
 
 ---
 
@@ -252,7 +252,7 @@ npm test
 
 ### Manual API Testing (Postman)
 
-All API endpoints (Tenants, Bills, Payments) were manually tested in Postman during development before writing automated tests — covering GET, POST, PUT and DELETE for each resource. This included checking correct status codes (200, 201, 204, 404), verifying the bill auto-split calculation and confirming data persisted correctly in the JSON files. All manual tests passed.
+All API endpoints (Tenants, Bills, Payments) were manually tested in Postman during development before writing automated tests — covering GET, POST, PUT and DELETE for each resource. This included checking correct status codes (200, 201, 204, 404), verifying the bill auto-split calculation and confirming data persisted correctly in the JSON files. All manual tests passed.Automated tests were executed using npm test and all eight tests passed successfully.
 
 Tests are written using **Jest** and **Supertest**.
 
@@ -312,21 +312,21 @@ In a production system, this could be migrated to SQLite for structured relation
 
 ## AI Usage Declaration
 
-This project was primarily designed, implemented and tested by the student.
+I used Claude by Anthropic (via claude.ai) as a teaching mentor to help me understand unfamiliar concepts and explore implementation approaches during the development of this project.
 
-Generative AI was used selectively as a learning resource to better understand unfamiliar concepts and to validate implementation approaches during development.
+AI was used selectively as a learning resource rather than to generate the complete solution.
 
-AI assistance was limited to:
+AI assistance was mainly used for:
 
 - Understanding Express.js routing and middleware
-- Clarifying the Fetch API and asynchronous JavaScript
+- Learning the Fetch API and asynchronous JavaScript
 - Understanding Jest and Supertest testing workflows
-- Discussing the shared bill-splitting implementation
+- Discussing the shared bill-splitting logic
 - Exploring an implementation approach for the tenant selection dropdown
 
-The project requirements, application design and overall implementation were completed by the student. AI was used only for concept clarification and guidance on selected technical tasks. All AI-assisted suggestions were reviewed, modified and tested before being integrated into the final solution.
+I designed the overall application, implemented the project requirements, tested the application, and debugged the code myself. Any AI-assisted suggestions were reviewed, modified, tested, and integrated only after I understood how they worked.
 
-**Overall AI Usage Level:** **Level 2–3** (AI used primarily for learning and concept clarification rather than generating the complete solution.)
+Overall, AI was used primarily for learning, concept clarification, and guidance rather than generating the complete project.
 
 ## References & Attributions
 
@@ -340,6 +340,7 @@ The project requirements, application design and overall implementation were com
 - MDN Web Docs - JSON.parse() and JSON.stringify(): https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/JSON
 - MDN Web Docs - window.location: https://developer.mozilla.org/en-US/docs/Web/API/Window/location
 - Node.js fs Module: https://nodejs.org/api/fs.html
+- Claude Sonnet accessed via https://claude.ai
 
 ### Deployment
 
